@@ -109,6 +109,16 @@ RSpec.describe UrlValidator do
     end
   end
 
+  context 'options for "reserved"' do
+    context 'when value is false' do
+      it 'reject reserved authority' do
+        post.url = 'http://example.com/'
+        Post.validates_url_of :url, reserved: false
+        expect(post).to_not be_valid
+      end
+    end
+  end
+
   context 'options for "path"' do
     context 'when value is true' do
       it 'check for path presence' do

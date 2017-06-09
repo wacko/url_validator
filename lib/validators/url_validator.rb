@@ -10,6 +10,8 @@ module ActiveModel
     class UrlValidator < ::ActiveModel::EachValidator
       attr_accessor :schemes
 
+      RESERVED_DOMAINS = %w[test example invalid localhost example.com example.net example.org].freeze
+
       def initialize(options)
         options[:schemes] = %w[http https]
         options.reverse_merge!(message: 'is not a valid URL')
@@ -27,6 +29,7 @@ module ActiveModel
         valid = catch(:invalid) do
           validate_domain(value)
           validate_authority(options[:authority], url.host) if options.key?(:authority)
+          validate_reserved(options[:reserved], url.host) if options.key?(:reserved)
           validate_path(options[:path], url.path) if options.key?(:path)
           validate_query(options[:query], url.query) if options.key?(:query)
           validate_fragment(options[:fragment], url.fragment) if options.key?(:fragment)
@@ -45,6 +48,14 @@ module ActiveModel
       def validate_authority(option, authority)
         throw :invalid if option.is_a?(Regexp) && authority !~ option
         throw :invalid if option.is_a?(Array) && !option.include?(authority)
+      end
+
+      def validate_reserved(option, host)
+        if option == false
+          RESERVED_DOMAINS.each do |domain|
+            throw :invalid if host.end_with? domain
+          end
+        end
       end
 
       def validate_path(option, path)
