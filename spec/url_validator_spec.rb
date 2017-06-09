@@ -78,6 +78,37 @@ RSpec.describe UrlValidator do
     end
   end
 
+  context 'options for "authority"' do
+    context 'when value is a regexp' do
+      it 'check for authority match' do
+        post.url = 'http://www.example.com/some/path'
+        # Post.validates_url_of :url, authority: %r{(?:.+\.)*example.com}
+        Post.validates_url_of :url, authority: /.*/
+        expect(post).to be_valid
+      end
+
+      it 'reject missing authority' do
+        post.url = 'http://example.com/'
+        Post.validates_url_of :url, authority: /google.com/
+        expect(post).to_not be_valid
+      end
+    end
+
+    context 'when value is an array' do
+      it 'check for authority match' do
+        post.url = 'http://example.com/some/path'
+        Post.validates_url_of :url, authority: %w[example.com example.org]
+        expect(post).to be_valid
+      end
+
+      it 'reject missing authority' do
+        post.url = 'http://google.com/'
+        Post.validates_url_of :url, authority: %w[example.com example.org]
+        expect(post).to_not be_valid
+      end
+    end
+  end
+
   context 'options for "path"' do
     context 'when value is true' do
       it 'check for path presence' do

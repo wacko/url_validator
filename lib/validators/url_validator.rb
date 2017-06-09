@@ -26,6 +26,7 @@ module ActiveModel
         url = URI(value)
         valid = catch(:invalid) do
           validate_domain(value)
+          validate_authority(options[:authority], url.host) if options.key?(:authority)
           validate_path(options[:path], url.path) if options.key?(:path)
           validate_query(options[:query], url.query) if options.key?(:query)
           validate_fragment(options[:fragment], url.fragment) if options.key?(:fragment)
@@ -39,6 +40,11 @@ module ActiveModel
 
       def validate_domain(url)
         throw :invalid unless url =~ regexp
+      end
+
+      def validate_authority(option, authority)
+        throw :invalid if option.is_a?(Regexp) && authority !~ option
+        throw :invalid if option.is_a?(Array) && !option.include?(authority)
       end
 
       def validate_path(option, path)
